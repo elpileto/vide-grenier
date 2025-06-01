@@ -211,6 +211,46 @@
     }
 
     window.onload = chargerCatalogue;
-  </script>
+  </script><script>
+  const airtableToken = "Bearer patZwSxNoDEwegUiN.23b0723592cd6670d1523d0e005f6bde2ac424035a6b7c2a9882d947fbf4f758";
+  const baseId = "appn8YMTHDliYnKs0.";
+  const tableName = "Objets";
+
+  async function fetchObjets() {
+    const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
+      headers: {
+        Authorization: airtableToken,
+      }
+    });
+
+    const data = await response.json();
+    console.log("Données reçues :", data);
+
+    const container = document.querySelector(".catalogue");
+    container.innerHTML = ""; // Nettoie d'abord le contenu existant
+
+    data.records.forEach(record => {
+      const nom = record.fields.Nom || "Sans nom";
+      const prix = record.fields.Prix || "0";
+      const image = record.fields.Image || "https://via.placeholder.com/300x180?text=Pas+d'image";
+      const description = record.fields.Description || "";
+
+      const item = document.createElement("div");
+      item.className = "item";
+      item.innerHTML = `
+        <img src="${image}" alt="${nom}">
+        <div class="item-content">
+          <div class="item-title">${nom}</div>
+          <div class="item-price">${prix} €</div>
+          <div class="item-description">${description}</div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  // Appelle la fonction dès que la page est chargée
+  window.addEventListener("DOMContentLoaded", fetchObjets);
+</script>
 </body>
 </html>
