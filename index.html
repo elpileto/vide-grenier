@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vide grenier</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #fdf6ef;
+      --text-color: #4e342e;
+      --accent-color: #a67c52;
+      --accent-light: #d7b899;
+      --card-bg: #fffaf4;
+      --shadow: rgba(0, 0, 0, 0.05);
+      --highlight: #ffecb3;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+      background: var(--bg-color) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none"><rect width="40" height="40" fill="%23fdf6ef"/><circle cx="20" cy="20" r="2" fill="%23e0d7cc" opacity="0.15"/></svg>') repeat;
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background-blend-mode: multiply;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3em;
+      margin: 40px 0 15px;
+      color: var(--accent-color);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.12);
+      letter-spacing: 0.06em;
+    }
+    .intro {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 40px;
+      padding: 0 20px;
+      color: var(--accent-color);
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      max-width: 700px;
+      padding: 0 20px;
+      width: 100%;
+    }
+    input, select {
+      padding: 10px 14px;
+      border: 2px solid var(--accent-light);
+      border-radius: 10px;
+      font-size: 1em;
+      flex: 1;
+      min-width: 160px;
+      background: #fffdf8;
+      color: var(--text-color);
+      font-weight: 600;
+      transition: border-color 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 5px var(--accent-color);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      padding: 0 20px;
+      width: 100%;
+    }
+    .card {
+      background: #fffaf4cc; /* un peu translucide */
+      border-radius: 14px;
+      box-shadow: 0 6px 14px rgba(142, 111, 89, 0.15);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      transition: 0.3s ease;
+      animation: fadeIn 0.5s ease forwards;
+      border: 1.5px solid var(--accent-light);
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 14px 30px rgba(142, 111, 89, 0.28);
+    }
+
+    /* Slider styles */
+    .card .image-slider {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--card-bg);
+      user-select: none;
+      touch-action: pan-y;
+    }
+
+    .card .image-slider img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+      border-radius: 10px;
+      cursor: pointer; /* Indique que l’image est cliquable */
+      user-select: none;
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    .card .image-slider button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.7);
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--accent-color);
+      user-select: none;
+      transition: background 0.3s;
+      z-index: 2;
+    }
+
+    .card .image-slider button:hover {
+      background: var(--accent-light);
+    }
+
+    .card .image-slider .prev {
+      left: 10px;
+    }
+
+    .card .image-slider .next {
+      right: 10px;
+    }
+
+    .nom {
+      font-weight: 700;
+      font-size: 1.3em;
+      margin-bottom: 8px;
+      color: var(--accent-color);
+      text-shadow: 0 0 3px rgba(166, 124, 82, 0.3);
+    }
+    .prix {
+      color: var(--accent-color);
+      font-weight: 700;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+    .desc {
+      font-size: 1em;
+      color: #5a3e2b;
+      line-height: 1.3em;
+      flex-grow: 1;
+    }
+    footer {
+      margin-top: auto;
+      padding: 20px 10px;
+      text-align: center;
+      color: var(--accent-light);
+      font-size: 0.95em;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Overlay grand écran pour image */
+    #overlay-image-viewer {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(78, 52, 46, 0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      cursor: zoom-out;
+      touch-action: none;
+      user-select: none;
+    }
+    #overlay-image-viewer img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 20px;
+      box-shadow: 0 0 50px 12px rgba(166, 124, 82, 0.7);
+      user-select: none;
+      pointer-events: none;
+      touch-action: none;
+    }
+
+    /* Slider dots */
+    #dots-container {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 1100;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s;
+      border: 1.5px solid var(--accent-color);
+    }
+    .dot.active {
+      background: var(--accent-color);
+      box-shadow: 0 0 5px var(--accent-color);
+    }
+
+    /* Spinner CSS */
+    .spinner-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100px; /* Hauteur minimale pour le spinner global */
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--accent-color);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Styles pour le spinner d'image */
+    .image-spinner-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.7);
+      border-radius: 10px;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Styles pour le spinner de l'overlay d'image */
+    #overlay-spinner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(78, 52, 46, 0.95);
+      z-index: 1001;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vide-grenier</h1>
+  <div class="intro">Bienvenue sur notre vide-grenier 2025 ! Faites de bonnes affaires parmi nos objets à vendre.</div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="Rechercher..." oninput="filtrer()" />
+    <select id="tri" onchange="filtrer()">
+      <option value="">-- Trier --</option>
+      <option value="prix-asc">Prix croissant</option>
+      <option value="prix-desc">Prix décroissant</option>
+      <option value="nom-asc">Nom A → Z</option>
+      <option value="nom-desc">Nom Z → A</option>
+    </select>
+  </div>
+
+  <div class="grid" id="liste-objets">
+    <!-- Spinner de chargement initial -->
+    <div class="spinner-container" id="initial-load-spinner">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Vide grenier - VonPilaaf - LP
+    <br />
+    <a href="contact.html" style="color: var(--accent-color); text-decoration: underline;">Contact / Boutiques en ligne</a>
+  </footer>
+
+  <!-- Overlay image grand écran -->
+  <div id="overlay-image-viewer" onclick="fermerOverlay()">
+    <img src="" alt="Image agrandie" class="hidden" />
+    <!-- Spinner pour l'image de l'overlay -->
+    <div class="spinner-container" id="overlay-spinner">
+      <div class="spinner"></div>
+    </div>
+    <div id="dots-container"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQPqZu4Nxmc9rKFo1V7EvM4PapcW6aZQ5eTbscq7lV1UwoZrXW7ilCRjJhMdbZK45_HivpNAw3qm6-Q/pub?output=csv";
+    let objets = [];
+    const initialLoadSpinner = document.getElementById('initial-load-spinner');
+
+    // Afficher le spinner de chargement initial
+    if (initialLoadSpinner) {
+      initialLoadSpinner.classList.remove('hidden');
+    }
+
+    fetch(CSV_URL)
+      .then(response => {
+        // Vérifier si la réponse est OK (statut 200)
+        if (!response.ok) {
+          throw new Error(`Erreur réseau ou HTTP: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+      })
+      .then(data => {
+        const result = Papa.parse(data, { header: true });
+        objets = result.data.filter(o => o.Nom && o.Prix);
+        filtrer();
+      })
+      .catch(error => {
+        console.error("Erreur lors du chargement des données CSV:", error);
+        const cont = document.getElementById("liste-objets");
+        cont.innerHTML = `<p style='text-align:center; color: var(--accent-light);'>Erreur lors du chargement des données. Vérifiez la console pour plus de détails.<br>Cause possible: La feuille Google Sheets n'est pas publique ou l'URL est incorrecte.</p>`;
+      })
+      .finally(() => {
+        // Cacher le spinner de chargement initial une fois le processus terminé
+        if (initialLoadSpinner) {
+          initialLoadSpinner.classList.add('hidden');
+        }
+      });
+
+    function filtrer() {
+      const mot = document.getElementById("search").value.toLowerCase();
+      const tri = document.getElementById("tri").value;
+
+      let filtered = objets.filter(o =>
+        o.Nom.toLowerCase().includes(mot) || (o.Description && o.Description.toLowerCase().includes(mot))
+      );
+
+      if (tri === "prix-asc") {
+        filtered.sort((a, b) => parseFloat(a.Prix) - parseFloat(b.Prix));
+      } else if (tri === "prix-desc") {
+        filtered.sort((a, b) => parseFloat(b.Prix) - parseFloat(a.Prix));
+      } else if (tri === "nom-asc") {
+        filtered.sort((a, b) => a.Nom.localeCompare(b.Nom));
+      } else if (tri === "nom-desc") {
+        filtered.sort((a, b) => b.Nom.localeCompare(a.Nom));
+      }
+
+      afficherObjets(filtered);
+    }
+
+    function afficherObjets(objets) {
+      const cont = document.getElementById("liste-objets");
+      if (!objets.length) {
+        cont.innerHTML = "<p style='text-align:center; color: var(--accent-light);'>Aucun objet trouvé.</p>";
+        return;
+      }
+      cont.innerHTML = objets.map((obj, i) => {
+        const photos = obj.Image ? obj.Image.split("|").map(s => s.trim()).filter(url => url) : []; // Filter out empty strings
+        return `
+          <div class="card" data-id="${i}">
+            <div class="image-slider" data-index="0" data-total="${photos.length}" data-id="${i}">
+              ${photos.length ? `
+                <img src="${photos[0]}" alt="${obj.Nom}" class="hidden" />
+                <div class="image-spinner-overlay">
+                  <div class="spinner"></div>
+                </div>
+                ${photos.length > 1 ? `
+                  <button class="prev" aria-label="Photo précédente">&#8249;</button>
+                  <button class="next" aria-label="Photo suivante">&#8250;</button>
+                ` : ""}
+              ` : `<div style="height:180px; display:flex; align-items:center; justify-content:center; color: #aaa;">Pas de photo</div>`}
+            </div>
+            <div class="nom">${obj.Nom}</div>
+            <div class="prix">${obj.Prix} €</div>
+            <div class="desc">${obj.Description || ""}</div>
+          </div>
+        `;
+      }).join("");
+
+      // Setup sliders buttons & click events
+      document.querySelectorAll(".image-slider").forEach(slider => {
+        const total = parseInt(slider.dataset.total);
+        const id = slider.dataset.id;
+        const photos = objets[id].Image ? objets[id].Image.split("|").map(s => s.trim()).filter(url => url) : [];
+
+        const img = slider.querySelector("img");
+        const spinnerOverlay = slider.querySelector(".image-spinner-overlay");
+        const prevBtn = slider.querySelector(".prev");
+        const nextBtn = slider.querySelector(".next");
+
+        // Function to load image and handle spinner
+        const loadImage = (imageElement, imageUrl, spinnerElement) => {
+          if (imageElement && imageUrl) {
+            imageElement.classList.add('hidden'); // Hide image while loading
+            if (spinnerElement) spinnerElement.classList.remove('hidden'); // Show spinner
+
+            imageElement.src = imageUrl;
+            imageElement.onload = () => {
+              imageElement.classList.remove('hidden'); // Show image
+              if (spinnerElement) spinnerElement.classList.add('hidden'); // Hide spinner
+            };
+            imageElement.onerror = () => {
+              imageElement.classList.remove('hidden'); // Show image (even if broken)
+              if (spinnerElement) spinnerElement.classList.add('hidden'); // Hide spinner
+              imageElement.src = `https://placehold.co/180x180/e0d7cc/4e342e?text=Image+introuvable`; // Fallback image
+            };
+          } else if (imageElement) {
+             // If no image URL, hide image and spinner if they exist
+             imageElement.classList.add('hidden');
+             if (spinnerElement) spinnerElement.classList.add('hidden');
+          }
+        };
+
+        // Initial load for the first image in the slider
+        if (img && photos.length > 0) {
+          loadImage(img, photos[0], spinnerOverlay);
+        } else if (img) {
+          // If no photos, ensure image and spinner are hidden
+          img.classList.add('hidden');
+          if (spinnerOverlay) spinnerOverlay.classList.add('hidden');
+        }
+
+
+        if (total > 1) {
+          if (prevBtn) {
+            prevBtn.onclick = e => {
+              e.stopPropagation();
+              let idx = parseInt(slider.dataset.index);
+              idx = (idx - 1 + photos.length) % photos.length;
+              slider.dataset.index = idx;
+              loadImage(img, photos[idx], spinnerOverlay);
+            };
+          }
+          if (nextBtn) {
+            nextBtn.onclick = e => {
+              e.stopPropagation();
+              let idx = parseInt(slider.dataset.index);
+              idx = (idx + 1) % photos.length;
+              slider.dataset.index = idx;
+              loadImage(img, photos[idx], spinnerOverlay);
+            };
+          }
+        }
+
+        // Toujours permettre d'ouvrir l'overlay même si 1 seule image
+        if (img) {
+          img.onclick = () => ouvrirOverlay(photos, parseInt(slider.dataset.index));
+        }
+      });
+    }
+
+    // Overlay grand écran avec swipe
+    const overlay = document.getElementById("overlay-image-viewer");
+    const overlayImg = overlay.querySelector("img");
+    const overlaySpinner = document.getElementById("overlay-spinner");
+    const dotsContainer = document.getElementById("dots-container");
+
+    let overlayPhotos = [];
+    let overlayIndex = 0;
+    let startX = null;
+
+    function ouvrirOverlay(photos, index) {
+      overlayPhotos = photos;
+      overlayIndex = index;
+      overlay.style.display = "flex";
+      startX = null;
+      document.body.style.overflow = "hidden";
+      afficherOverlayImage(); // Call this after making overlay visible
+    }
+
+    function afficherOverlayImage() {
+      overlayImg.classList.add('hidden'); // Hide image while loading
+      overlaySpinner.classList.remove('hidden'); // Show spinner
+
+      overlayImg.src = overlayPhotos[overlayIndex];
+      overlayImg.onload = () => {
+        overlayImg.classList.remove('hidden'); // Show image
+        overlaySpinner.classList.add('hidden'); // Hide spinner
+      };
+      overlayImg.onerror = () => {
+        overlayImg.classList.remove('hidden'); // Show image (even if broken)
+        overlaySpinner.classList.add('hidden'); // Hide spinner
+        overlayImg.src = `https://placehold.co/800x600/4e342e/d7b899?text=Image+introuvable`; // Fallback for overlay
+      };
+      afficherDots();
+    }
+
+    function fermerOverlay() {
+      overlay.style.display = "none";
+      document.body.style.overflow = "auto";
+    }
+
+    function afficherDots() {
+      dotsContainer.innerHTML = "";
+      overlayPhotos.forEach((_, i) => {
+        const dot = document.createElement("div");
+        dot.classList.add("dot");
+        if (i === overlayIndex) dot.classList.add("active");
+        dot.onclick = e => {
+          overlayIndex = i;
+          afficherOverlayImage();
+          e.stopPropagation();
+        };
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    // Swipe gestures pour mobile/tablette
+    overlay.addEventListener("touchstart", e => {
+      if (e.touches.length === 1) {
+        startX = e.touches[0].clientX;
+      }
+    });
+    overlay.addEventListener("touchmove", e => {
+      if (!startX) return;
+      const dx = e.touches[0].clientX - startX;
+      // Prevent scrolling if horizontal swipe is detected
+      if (Math.abs(dx) > 10) {
+        e.preventDefault();
+      }
+      if (Math.abs(dx) > 40) {
+        if (dx > 0) prevOverlay();
+        else nextOverlay();
+        startX = null;
+      }
+    });
+    overlay.addEventListener("touchend", () => {
+        startX = null; // Reset startX on touch end
+    });
+
+    // Click on overlay background to close
+    overlay.addEventListener("click", (e) => {
+      // Only close if clicked directly on the overlay, not on the image itself
+      if (e.target === overlay || e.target === overlaySpinner || e.target.closest('#dots-container') === null) {
+        fermerOverlay();
+      }
+    });
+
+    // Bouton retour en haut
+    const scrollTopBtn = document.createElement("button");
+    scrollTopBtn.textContent = "↑ Haut";
+    Object.assign(scrollTopBtn.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      padding: "10px 14px",
+      fontSize: "1em",
+      background: "var(--accent-color)",
+      color: "white",
+      border: "none",
+      borderRadius: "10px",
+      cursor: "pointer",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+      display: "none",
+      zIndex: 999
+    });
+    scrollTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.body.appendChild(scrollTopBtn);
+
+    window.addEventListener("scroll", () => {
+      scrollTopBtn.style.display = window.scrollY > 400 ? "block" : "none";
+    });
+    // Navigation avec clavier
+    document.addEventListener("keydown", e => {
+      if (overlay.style.display === "flex") {
+        if (e.key === "ArrowRight") nextOverlay();
+        else if (e.key === "ArrowLeft") prevOverlay();
+        else if (e.key === "Escape") fermerOverlay();
+      }
+    });
+
+    function nextOverlay() {
+      overlayIndex = (overlayIndex + 1) % overlayPhotos.length;
+      afficherOverlayImage();
+    }
+    function prevOverlay() {
+      overlayIndex = (overlayIndex - 1 + overlayPhotos.length) % overlayPhotos.length;
+      afficherOverlayImage();
+    }
+  </script>
+</body>
+</html>
